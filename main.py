@@ -17,7 +17,7 @@ remote_path = '/飞浆中转'  # 坚果云中的远程路径
 remote_path2 = '/img_url'  # 坚果云中的远程路径
 
 # 本地路径配置
-local_path = 'E:/坚果云'  # 本地路径
+local_path = '/app'  # 本地路径
 local_path_url = 'E:/坚果云/img_url'  # 本地路径
 # 实例化 Client 对象
 client = Client(base_url=webdav_url, auth=webdav_auth)
