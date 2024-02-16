@@ -150,8 +150,7 @@ def download_files():
         for file_info in files:
             file_name = os.path.basename(file_info)
 
-            local_path2 = os.path.join(local_path_url, file_name)
-
+            local_path2=local_path_url+'/'+file_name
             try:
                 if ".txt" in file_info:
                     # 构建文件的完整路径
