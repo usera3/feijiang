@@ -22,6 +22,24 @@ local_path_url = '/app/imgs_url'  # 本地路径
 # 实例化 Client 对象
 client = Client(base_url=webdav_url, auth=webdav_auth)
 
+
+def wait_and_read_file(file_path, timeout=60):
+    start_time = time.time()
+
+    # 等待文件出现或超时
+    while not os.path.exists(file_path):
+        if time.time() - start_time > timeout:
+            print("超时：文件未出现")
+            content="绘图端超时，请稍后重试"
+            return content
+        time.sleep(1)  # 每秒检查一次文件是否存在
+
+    # 文件已经出现，读取内容
+    with open(file_path, 'r') as file:
+        content = file.read()
+
+    return content
+
 def generate_random_filename(length):
     # 生成随机字符串作为文件名
     letters = string.ascii_lowercase + string.ascii_uppercase
@@ -60,11 +78,15 @@ def upload_description_api():
 
                 # 上传描述词到坚果云
                 upload_filename = generate_unique_filename(12) + ".txt"
+                url_filename=local_path_url+'/' + upload_filename
                 client.upload_file(from_path='/app/描述词.txt', to_path=remote_path + '/' + upload_filename, overwrite=False)
                 print("描述词已上传到坚果云")
+                file_content = wait_and_read_file(url_filename, timeout=60)
                 response = {
                     "upload_filename": upload_filename,
-                    "message": "描述词已上传到坚果云"
+                    "img_url": file_content,
+                    "message": "描述词已上传"
+
                 }
                 return jsonify(response)
             except Exception as err:
