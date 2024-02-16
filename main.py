@@ -79,7 +79,8 @@ def upload_description_api():
                 # 上传描述词到坚果云
                 upload_filename = generate_unique_filename(12) + ".txt"
                 url_filename=local_path_url+'/' + upload_filename
-                client.upload_file(from_path="/app/描述词.txt", to_path=remote_path + '/' + upload_filename, overwrite=False)
+                from_path=local_path+'/' + '描述词.txt'
+                client.upload_file(from_path=from_path, to_path=remote_path + '/' + upload_filename, overwrite=False)
                 print("描述词已上传到坚果云")
                 file_content = wait_and_read_file(url_filename, timeout=29)
                 response = {
