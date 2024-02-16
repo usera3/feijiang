@@ -81,7 +81,7 @@ def upload_description_api():
                 url_filename=local_path_url+'/' + upload_filename
                 client.upload_file(from_path='/app/描述词.txt', to_path=remote_path + '/' + upload_filename, overwrite=False)
                 print("描述词已上传到坚果云")
-                file_content = wait_and_read_file(url_filename, timeout=60)
+                file_content = wait_and_read_file(url_filename, timeout=90)
                 response = {
                     "upload_filename": upload_filename,
                     "img_url": file_content,
