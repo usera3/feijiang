@@ -6,6 +6,7 @@ import random
 import string
 import time
 
+from pathlib import Path
 from webdav4.client import Client
 
 app = Flask(__name__)
@@ -17,8 +18,8 @@ remote_path = '/飞浆中转'  # 坚果云中的远程路径
 remote_path2 = '/img_url'  # 坚果云中的远程路径
 
 # 本地路径配置
-local_path = '/app/imgs_url'  # 本地路径
-local_path_url = '/app'  # 本地路径
+local_path = '/app'  # 本地路径
+local_path_url = '/app/imgs_url'  # 本地路径
 # 实例化 Client 对象
 client = Client(base_url=webdav_url, auth=webdav_auth)
 
@@ -77,10 +78,11 @@ def upload_description_api():
             try:
 
                 # 上传描述词到坚果云
+                # 将字符串路径转换为 PathLike 对象
+                local_txt_path = Path(local_txt_path)
                 upload_filename = generate_unique_filename(12) + ".txt"
                 url_filename=local_path_url+'/' + upload_filename
-                from_path=local_path+'/' + '描述词.txt'
-                client.upload_file(from_path=from_path, to_path=remote_path + '/' + upload_filename, overwrite=False)
+                client.upload_file(from_path=local_txt_path, to_path=remote_path + '/' + upload_filename, overwrite=False)
                 print("描述词已上传到坚果云")
                 file_content = wait_and_read_file(url_filename, timeout=29)
                 response = {
@@ -151,7 +153,10 @@ def download_files():
         for file_info in files:
             file_name = os.path.basename(file_info)
 
+            # local_path2 = os.path.join(local_path_url, file_name)
             local_path2=local_path_url+'/'+file_name
+            local_path2=Path(local_path2)
+
             try:
                 if ".txt" in file_info:
                     # 构建文件的完整路径
@@ -161,7 +166,7 @@ def download_files():
                     # print( file_info)
                     # 下载文件
                     client.download_file(from_path=file_path, to_path=local_path2)
-
+                    print(local_path2)
                     # 下载成功，保存文件到本地
                     with open(local_path2, 'r') as file:
                         # txt_file_path = os.path.join(folder_path, file)
@@ -179,7 +184,6 @@ def download_files():
 
         # 完成当前循环后，等待一段时间再继续下一次循环
         time.sleep(10)
-
 
 
 if __name__ == "__main__":
