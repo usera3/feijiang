@@ -230,4 +230,4 @@ if __name__ == "__main__":
     # 创建一个新的线程来处理上传描述词的操作
     # download_thread = threading.Thread(target=download_files)
     # download_thread.start()
-    app.run()
+    app.run(host='0.0.0.0', port=8000, debug=False)
