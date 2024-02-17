@@ -24,6 +24,44 @@ local_path_url = '/app/imgs_url'  # 本地路径
 client = Client(base_url=webdav_url, auth=webdav_auth)
 
 
+
+def download_files_and_get_content(client, remote_path2, local_path_url):
+    while True:
+        files = client.ls(remote_path2, detail=False)
+        if len(files) == 0:
+            print("暂未发现图片链接")
+            time.sleep(10)
+            continue
+
+        for file_info in files:
+            file_name = os.path.basename(file_info)
+            local_path2 = local_path_url + '/' + file_name
+            local_path2 = Path(local_path2)
+
+            try:
+                if ".txt" in file_info:
+                    file_path = file_info
+                    client.download_file(from_path=file_path, to_path=local_path2)
+                    with open(local_path2, 'r') as file:
+                        content = file.read()
+                        client.remove(path=file_path)
+                        print(f"文件 {file_path} 删除成功")
+                        return content
+            except Exception as err:
+                if "not found" in str(err) or "404 Not Found" in str(err):
+                    print(f"文件 {file_info} 已被删除或不存在")
+                else:
+                    raise err
+
+        # 如果没有找到文件，等待一段时间再重试
+        print("等待文件出现...")
+        time.sleep(10)
+
+
+
+
+
+
 def wait_and_read_file(file_path, timeout=60):
     start_time = time.time()
 
@@ -84,7 +122,8 @@ def upload_description_api():
                 url_filename=local_path_url+'/' + upload_filename
                 client.upload_file(from_path=local_txt_path, to_path=remote_path + '/' + upload_filename, overwrite=False)
                 print("描述词已上传到坚果云")
-                file_content = wait_and_read_file(url_filename, timeout=29)
+                # file_content = wait_and_read_file(url_filename, timeout=29)
+                file_content = download_files_and_get_content(client, remote_path2, local_path_url)
                 response = {
                     "upload_filename": upload_filename,
                     "img_url": file_content,
@@ -141,53 +180,54 @@ def upload_description_api():
 #                     raise err
 
 
-def download_files():
-    while True:
-        files = client.ls(remote_path2, detail=False)
-        # 检查文件列表是否为空
-        if len(files) == 0:
-            print("暂未发现图片链接")
-            time.sleep(10)
-            continue
+# def download_files():
+#     while True:
+#         files = client.ls(remote_path2, detail=False)
+#         # 检查文件列表是否为空
+#         if len(files) == 0:
+#             print("暂未发现图片链接")
+#             time.sleep(10)
+#             continue
+#
+#         for file_info in files:
+#             file_name = os.path.basename(file_info)
+#
+#             # local_path2 = os.path.join(local_path_url, file_name)
+#             local_path2=local_path_url+'/'+file_name
+#             local_path2=Path(local_path2)
+#
+#             try:
+#                 if ".txt" in file_info:
+#                     # 构建文件的完整路径
+#                     file_path = file_info
+#                     # print(file_path)
+#                     # print(remote_path)
+#                     # print( file_info)
+#                     # 下载文件
+#                     client.download_file(from_path=file_path, to_path=local_path2)
+#                     print(local_path2)
+#                     # 下载成功，保存文件到本地
+#                     with open(local_path2, 'r') as file:
+#                         # txt_file_path = os.path.join(folder_path, file)
+#                         content = file.read()
+#                         print(content)
+#
+#                     # 删除文件
+#                     client.remove(path=file_path)
+#                     print(f"文件 {file_path} 删除成功")
+#             except Exception as err:
+#                 if "not found" in str(err) or "404 Not Found" in str(err):
+#                     print(f"文件 {file_path} 已被删除或不存在")
+#                 else:
+#                     raise err
+#
+#         # 完成当前循环后，等待一段时间再继续下一次循环
+#         time.sleep(10)
 
-        for file_info in files:
-            file_name = os.path.basename(file_info)
-
-            # local_path2 = os.path.join(local_path_url, file_name)
-            local_path2=local_path_url+'/'+file_name
-            local_path2=Path(local_path2)
-
-            try:
-                if ".txt" in file_info:
-                    # 构建文件的完整路径
-                    file_path = file_info
-                    # print(file_path)
-                    # print(remote_path)
-                    # print( file_info)
-                    # 下载文件
-                    client.download_file(from_path=file_path, to_path=local_path2)
-                    print(local_path2)
-                    # 下载成功，保存文件到本地
-                    with open(local_path2, 'r') as file:
-                        # txt_file_path = os.path.join(folder_path, file)
-                        content = file.read()
-                        print(content)
-
-                    # 删除文件
-                    client.remove(path=file_path)
-                    print(f"文件 {file_path} 删除成功")
-            except Exception as err:
-                if "not found" in str(err) or "404 Not Found" in str(err):
-                    print(f"文件 {file_path} 已被删除或不存在")
-                else:
-                    raise err
-
-        # 完成当前循环后，等待一段时间再继续下一次循环
-        time.sleep(10)
 
 
 if __name__ == "__main__":
     # 创建一个新的线程来处理上传描述词的操作
-    download_thread = threading.Thread(target=download_files)
-    download_thread.start()
-    app.run(host='0.0.0.0', port=8000, debug=False)
+    # download_thread = threading.Thread(target=download_files)
+    # download_thread.start()
+    app.run()
